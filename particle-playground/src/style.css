@@ -1,4 +1,4 @@
-/* Fullscreen dark canvas — no page chrome around the 3D view */
+/* Fullscreen canvas */
 html,
 body {
   margin: 0;
@@ -11,10 +11,154 @@ body {
 canvas {
   display: block;
 }
+
+/* ------------------------------------------------ */
+/* Cosmic Singularity header                        */
+/* ------------------------------------------------ */
+
+#experience-header {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  text-align: center;
+  pointer-events: none;
+
+  font-family: 'Courier New', monospace;
+  color: white;
+}
+
+/* Main title */
+
+.project-title {
+  font-size: 18px;
+  letter-spacing: 7px;
+  font-weight: 600;
+  opacity: 0.9;
+
+  margin-bottom: 7px;
+}
+
+/* Subtitle */
+
+.project-subtitle {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.45);
+
+  margin-bottom: 20px;
+}
+
+/* ------------------------------------------------ */
+/* Version selector                                 */
+/* ------------------------------------------------ */
+
+.version-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  pointer-events: auto;
+}
+
+/* Dropdown */
+
+#version-select {
+  width: 330px;
+
+  padding: 10px 42px 10px 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+
+  background: rgba(8, 8, 14, 0.72);
+  color: rgba(255, 255, 255, 0.9);
+
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+
+  outline: none;
+  cursor: pointer;
+
+  backdrop-filter: blur(12px);
+
+  appearance: auto;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+#version-select:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(15, 15, 24, 0.85);
+}
+
+#version-select:focus {
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+/* Dropdown options */
+
+#version-select option {
+  background: #09090f;
+  color: white;
+}
+
+/* ------------------------------------------------ */
+/* Current version description                      */
+/* ------------------------------------------------ */
+
+#version-info {
+  width: 330px;
+
+  min-height: 38px;
+
+  padding: 10px 14px;
+
+  box-sizing: border-box;
+
+  border-radius: 12px;
+
+  background: rgba(8, 8, 14, 0.5);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(10px);
+
+  text-align: left;
+}
+
+#version-title {
+  font-size: 12px;
+  letter-spacing: 1px;
+
+  color: rgba(255, 255, 255, 0.9);
+
+  margin-bottom: 5px;
+}
+
+#version-description {
+  font-size: 10px;
+  line-height: 1.4;
+
+  color: rgba(255, 255, 255, 0.48);
+}
+
+/* ------------------------------------------------ */
+/* Reset button                                     */
+/* ------------------------------------------------ */
+
 #reset {
   position: fixed;
+
   bottom: 24px;
   left: 50%;
+
   transform: translateX(-50%);
 
   z-index: 10;
@@ -25,6 +169,7 @@ canvas {
   border-radius: 999px;
 
   background: rgba(10, 10, 15, 0.65);
+
   color: rgba(255, 255, 255, 0.8);
 
   font-family: 'Courier New', monospace;
@@ -44,7 +189,9 @@ canvas {
 
 #reset:hover {
   background: rgba(255, 255, 255, 0.12);
+
   color: white;
+
   border-color: rgba(255, 255, 255, 0.5);
 
   transform: translateX(-50%) translateY(-2px);
