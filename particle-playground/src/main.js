@@ -49,42 +49,211 @@ const versions = {
   10: {
     file: './versions/v10.js',
     title: 'Cosmic Singularity',
-    description: 'Twenty-four thousand particles pretending they understand the universe.'
+    description:
+      'Twenty-four thousand particles pretending they understand the universe.'
   }
 }
 
-// Tell Vite about every possible version module
 const versionModules = import.meta.glob('./versions/*.js')
 
-// Read version from URL
 const params = new URLSearchParams(window.location.search)
-const requestedVersion = Number(params.get('version')) || 10
+const requestedVersion = Number(params.get('version'))
 
-const currentVersion = versions[requestedVersion]
-  ? requestedVersion
-  : 10
+const landing = document.getElementById('landing')
+const experience = document.getElementById('experience')
 
-const version = versions[currentVersion]
+/* ------------------------------------------------ */
+/* LANDING PAGE                                     */
+/* ------------------------------------------------ */
 
-// UI
-const versionSelect = document.getElementById('version-select')
-const versionDescription = document.getElementById('version-description')
+if (!versions[requestedVersion]) {
+  startLanding()
 
-versionSelect.value = currentVersion
-versionDescription.textContent = version.description
+  document.getElementById('dive-in').addEventListener('click', () => {
+    window.location.href = '?version=10'
+  })
+}
 
-// Switch versions
-versionSelect.addEventListener('change', (event) => {
-  const selectedVersion = event.target.value
+/* ------------------------------------------------ */
+/* EXPERIENCE PAGE                                  */
+/* ------------------------------------------------ */
 
-  window.location.href = `?version=${selectedVersion}`
-})
+if (versions[requestedVersion]) {
+  landing.classList.add('hidden')
+  experience.classList.remove('hidden')
 
-// Load selected version
-const loadVersion = versionModules[version.file]
+  const currentVersion = requestedVersion
+  const version = versions[currentVersion]
 
-if (loadVersion) {
-  loadVersion()
-} else {
-  console.error(`Version module not found: ${version.file}`)
+  const versionSelect = document.getElementById('version-select')
+  const versionDescription = document.getElementById('version-description')
+
+  versionSelect.value = currentVersion
+  versionDescription.textContent = version.description
+
+  versionSelect.addEventListener('change', (event) => {
+    window.location.href = `?version=${event.target.value}`
+  })
+
+  const loadVersion = versionModules[version.file]
+
+  if (loadVersion) {
+    loadVersion()
+  } else {
+    console.error(`Version module not found: ${version.file}`)
+  }
+}
+
+/* ------------------------------------------------ */
+/* LANDING PARTICLE FIELD                           */
+/* ------------------------------------------------ */
+
+function startLanding() {
+  const canvas = document.getElementById('landing-canvas')
+  const ctx = canvas.getContext('2d')
+
+  let width
+  let height
+  let centerX
+  let centerY
+
+  const particles = []
+
+  function resize() {
+    const ratio = Math.min(window.devicePixelRatio, 2)
+
+    width = window.innerWidth
+    height = window.innerHeight
+
+    canvas.width = width * ratio
+    canvas.height = height * ratio
+
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
+
+    centerX = width / 2
+    centerY = height / 2
+  }
+
+  function createParticles() {
+    particles.length = 0
+
+    const count = Math.min(2200, Math.floor((width * height) / 700))
+
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const radius = 40 + Math.random() * Math.max(width, height) * 0.65
+
+      particles.push({
+        angle,
+        radius,
+        speed: 0.0008 + Math.random() * 0.002,
+        size: Math.random() * 1.4 + 0.2,
+        brightness: Math.random(),
+        offset: Math.random() * Math.PI * 2
+      })
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle = 'rgba(2, 3, 4, 0.18)'
+    ctx.fillRect(0, 0, width, height)
+
+    for (const particle of particles) {
+      particle.angle += particle.speed
+
+      /*
+       * The closer particles get to the center,
+       * the faster they orbit.
+       */
+      const distanceRatio = particle.radius / Math.max(width, height)
+
+      const angle =
+        particle.angle +
+        Math.sin(particle.radius * 0.008) * 0.8
+
+      const x =
+        centerX +
+        Math.cos(angle) * particle.radius
+
+      const y =
+        centerY +
+        Math.sin(angle) *
+          particle.radius *
+          0.55
+
+      const depth =
+        0.35 +
+        0.65 *
+          Math.abs(
+            Math.sin(
+              particle.offset + particle.angle
+            )
+          )
+
+      const alpha =
+        (0.12 + depth * 0.7) *
+        Math.max(0.2, 1 - distanceRatio * 0.7)
+
+      ctx.beginPath()
+
+      ctx.arc(
+        x,
+        y,
+        particle.size * depth,
+        0,
+        Math.PI * 2
+      )
+
+      ctx.fillStyle = `rgba(
+        ${185 + depth * 50},
+        ${205 + depth * 40},
+        ${200 + depth * 45},
+        ${alpha}
+      )`
+
+      ctx.fill()
+    }
+
+    /*
+     * Dark central void.
+     */
+    const glow = ctx.createRadialGradient(
+      centerX,
+      centerY,
+      0,
+      centerX,
+      centerY,
+      Math.min(width, height) * 0.22
+    )
+
+    glow.addColorStop(0, 'rgba(0, 0, 0, 1)')
+    glow.addColorStop(0.45, 'rgba(0, 0, 0, 0.92)')
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)')
+
+    ctx.fillStyle = glow
+
+    ctx.beginPath()
+    ctx.arc(
+      centerX,
+      centerY,
+      Math.min(width, height) * 0.22,
+      0,
+      Math.PI * 2
+    )
+    ctx.fill()
+
+    requestAnimationFrame(draw)
+  }
+
+  resize()
+  createParticles()
+  draw()
+
+  window.addEventListener('resize', () => {
+    resize()
+    createParticles()
+  })
 }

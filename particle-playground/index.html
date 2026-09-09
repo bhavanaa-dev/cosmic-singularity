@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0"
@@ -12,41 +13,111 @@
 
   <body>
 
-    <header id="experience-header">
+    <!-- LANDING PAGE -->
 
-      <div class="project-title">
-        COSMIC SINGULARITY
+    <section id="landing">
+
+      <canvas id="landing-canvas"></canvas>
+
+      <div class="landing-content">
+
+        <h1>COSMIC SINGULARITY</h1>
+
+        <p>
+          A PARTICLE EXPERIMENT THAT BECAME A GALAXY
+        </p>
+
+        <button id="dive-in">
+          DIVE IN
+          <span>↓</span>
+        </button>
+
+        <div class="landing-caption">
+          INTO THE UNKNOWN
+        </div>
+
       </div>
 
-      <div class="project-subtitle">
-        A particle experiment that became a galaxy
-      </div>
+    </section>
 
-      <div class="version-panel">
 
-        <select id="version-select">
-          <option value="1">V1 — The Beginning</option>
-          <option value="2">V2 — Things Start Moving</option>
-          <option value="3">V3 — Gravity Has Entered the Chat</option>
-          <option value="4">V4 — Enter the Vortex</option>
-          <option value="5">V5 — Into the Third Dimension</option>
-          <option value="6">V6 — And Then Came the Galaxy</option>
-          <option value="7">V7 — Make It Pretty</option>
-          <option value="8">V8 — Touch the Galaxy</option>
-          <option value="9">V9 — Deeper Into Space</option>
-          <option value="10">V10 — Cosmic Singularity</option>
-        </select>
+    <!-- EXPERIENCE -->
 
-       <div id="version-info">
-         <div id="version-description"></div>
-      </div>
-      </div>
+    <section id="experience" class="hidden">
 
-    </header>
+      <header id="experience-header">
 
-    <script type="module" src="/src/main.js"></script>
+        <div class="project-title">
+          COSMIC SINGULARITY
+        </div>
 
-    <button id="reset">Reset Particles</button>
+        <div class="project-subtitle">
+          A particle experiment that became a galaxy
+        </div>
+
+        <div class="version-panel">
+
+          <select id="version-select">
+            <option value="1">
+              V1 — The Beginning
+            </option>
+
+            <option value="2">
+              V2 — Things Start Moving
+            </option>
+
+            <option value="3">
+              V3 — Gravity Has Entered the Chat
+            </option>
+
+            <option value="4">
+              V4 — Enter the Vortex
+            </option>
+
+            <option value="5">
+              V5 — Into the Third Dimension
+            </option>
+
+            <option value="6">
+              V6 — And Then Came the Galaxy
+            </option>
+
+            <option value="7">
+              V7 — Make It Pretty
+            </option>
+
+            <option value="8">
+              V8 — Touch the Galaxy
+            </option>
+
+            <option value="9">
+              V9 — Deeper Into Space
+            </option>
+
+            <option value="10">
+              V10 — Cosmic Singularity
+            </option>
+          </select>
+
+          <div id="version-info">
+            <div id="version-description"></div>
+          </div>
+
+        </div>
+
+      </header>
+
+      <button id="reset">
+        Reset Particles
+      </button>
+
+    </section>
+
+
+    <script
+      type="module"
+      src="/src/main.js"
+    ></script>
 
   </body>
 </html>

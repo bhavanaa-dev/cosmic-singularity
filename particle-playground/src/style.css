@@ -1,70 +1,246 @@
-/* Fullscreen canvas */
+/* ------------------------------------------------ */
+/* GLOBAL                                           */
+/* ------------------------------------------------ */
+
 html,
 body {
   margin: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #050505;
+
+  background: #020304;
+}
+
+body {
+  font-family: 'Courier New', monospace;
 }
 
 canvas {
   display: block;
 }
 
+
 /* ------------------------------------------------ */
-/* Cosmic Singularity header                        */
+/* LANDING                                          */
+/* ------------------------------------------------ */
+
+#landing {
+  position: fixed;
+  inset: 0;
+
+  background: #020304;
+
+  overflow: hidden;
+
+  transition:
+    opacity 0.8s ease,
+    visibility 0.8s ease;
+}
+
+#landing.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#landing-canvas {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+}
+
+
+/* ------------------------------------------------ */
+/* LANDING CONTENT                                  */
+/* ------------------------------------------------ */
+
+.landing-content {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: min(90%, 700px);
+
+  text-align: center;
+
+  color: white;
+
+  pointer-events: none;
+}
+
+
+/* Title */
+
+.landing-content h1 {
+  margin: 0;
+
+  font-size: clamp(28px, 4vw, 54px);
+
+  font-weight: 400;
+
+  letter-spacing: clamp(6px, 1.2vw, 14px);
+
+  text-indent: clamp(6px, 1.2vw, 14px);
+
+  text-shadow:
+    0 0 20px rgba(210, 235, 230, 0.12);
+}
+
+
+/* Subtitle */
+
+.landing-content p {
+  margin: 18px 0 34px;
+
+  font-size: 10px;
+
+  letter-spacing: 4px;
+
+  color: rgba(220, 235, 230, 0.5);
+}
+
+
+/* ------------------------------------------------ */
+/* DIVE IN                                          */
+/* ------------------------------------------------ */
+
+#dive-in {
+  pointer-events: auto;
+
+  width: 180px;
+
+  padding: 13px 22px;
+
+  border: 1px solid rgba(210, 235, 230, 0.45);
+
+  border-radius: 999px;
+
+  background: rgba(0, 0, 0, 0.25);
+
+  color: rgba(235, 245, 242, 0.9);
+
+  font-family: 'Courier New', monospace;
+
+  font-size: 11px;
+
+  letter-spacing: 4px;
+
+  cursor: pointer;
+
+  backdrop-filter: blur(8px);
+
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+#dive-in span {
+  margin-left: 8px;
+
+  font-size: 14px;
+}
+
+#dive-in:hover {
+  background: rgba(210, 235, 230, 0.08);
+
+  border-color: rgba(230, 245, 240, 0.8);
+
+  box-shadow:
+    0 0 25px rgba(190, 225, 215, 0.12);
+
+  transform: translateY(-2px);
+}
+
+
+/* Caption */
+
+.landing-caption {
+  margin-top: 24px;
+
+  font-size: 8px;
+
+  letter-spacing: 5px;
+
+  color: rgba(220, 235, 230, 0.25);
+}
+
+
+/* ------------------------------------------------ */
+/* EXPERIENCE                                      */
+/* ------------------------------------------------ */
+
+.hidden {
+  display: none;
+}
+
+
+/* ------------------------------------------------ */
+/* EXPERIENCE HEADER                               */
 /* ------------------------------------------------ */
 
 #experience-header {
   position: fixed;
+
   top: 28px;
   left: 50%;
+
   transform: translateX(-50%);
+
   z-index: 10;
 
   text-align: center;
+
   pointer-events: none;
 
-  font-family: 'Courier New', monospace;
   color: white;
 }
 
-/* Main title */
-
 .project-title {
   font-size: 18px;
+
   letter-spacing: 7px;
+
   font-weight: 600;
+
   opacity: 0.9;
 
   margin-bottom: 7px;
 }
 
-/* Subtitle */
-
 .project-subtitle {
   font-size: 11px;
+
   letter-spacing: 2px;
+
   color: rgba(255, 255, 255, 0.45);
 
   margin-bottom: 20px;
 }
 
+
 /* ------------------------------------------------ */
-/* Version selector                                 */
+/* VERSION SELECTOR                                */
 /* ------------------------------------------------ */
 
 .version-panel {
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   gap: 10px;
 
   pointer-events: auto;
 }
-
-/* Dropdown */
 
 #version-select {
   width: 330px;
@@ -72,21 +248,24 @@ canvas {
   padding: 10px 42px 10px 16px;
 
   border: 1px solid rgba(255, 255, 255, 0.22);
+
   border-radius: 999px;
 
   background: rgba(8, 8, 14, 0.72);
+
   color: rgba(255, 255, 255, 0.9);
 
   font-family: 'Courier New', monospace;
+
   font-size: 12px;
+
   letter-spacing: 0.8px;
 
   outline: none;
+
   cursor: pointer;
 
   backdrop-filter: blur(12px);
-
-  appearance: auto;
 
   transition:
     border-color 0.2s ease,
@@ -95,22 +274,19 @@ canvas {
 
 #version-select:hover {
   border-color: rgba(255, 255, 255, 0.45);
+
   background: rgba(15, 15, 24, 0.85);
 }
 
-#version-select:focus {
-  border-color: rgba(255, 255, 255, 0.55);
-}
-
-/* Dropdown options */
-
 #version-select option {
   background: #09090f;
+
   color: white;
 }
 
+
 /* ------------------------------------------------ */
-/* Current version description                      */
+/* VERSION DESCRIPTION                             */
 /* ------------------------------------------------ */
 
 #version-info {
@@ -133,24 +309,17 @@ canvas {
   text-align: left;
 }
 
-#version-title {
-  font-size: 12px;
-  letter-spacing: 1px;
-
-  color: rgba(255, 255, 255, 0.9);
-
-  margin-bottom: 5px;
-}
-
 #version-description {
   font-size: 10px;
+
   line-height: 1.4;
 
   color: rgba(255, 255, 255, 0.48);
 }
 
+
 /* ------------------------------------------------ */
-/* Reset button                                     */
+/* RESET                                            */
 /* ------------------------------------------------ */
 
 #reset {
@@ -166,6 +335,7 @@ canvas {
   padding: 8px 18px;
 
   border: 1px solid rgba(255, 255, 255, 0.25);
+
   border-radius: 999px;
 
   background: rgba(10, 10, 15, 0.65);
@@ -173,7 +343,9 @@ canvas {
   color: rgba(255, 255, 255, 0.8);
 
   font-family: 'Courier New', monospace;
+
   font-size: 12px;
+
   letter-spacing: 2px;
 
   cursor: pointer;
@@ -194,5 +366,7 @@ canvas {
 
   border-color: rgba(255, 255, 255, 0.5);
 
-  transform: translateX(-50%) translateY(-2px);
+  transform:
+    translateX(-50%)
+    translateY(-2px);
 }
