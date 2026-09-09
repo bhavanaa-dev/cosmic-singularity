@@ -21,8 +21,7 @@ function initAudio() {
 
   if (!audioContext) {
 
-    audioContext =
-      new AudioContext()
+    audioContext = new AudioContext()
 
     masterGain =
       audioContext.createGain()
@@ -45,28 +44,6 @@ function initAudio() {
 
 }
 
-
-/* ================================================= */
-/* DIVE WHOOSH                                       */
-/* ================================================= */
-
-function playDiveSound() {
-  if (!audioContext || muted) return
-
-  playUISound(
-    520,
-    0.12,
-    0.11
-  )
-
-  setTimeout(() => {
-    playUISound(
-      760,
-      0.14,
-      0.08
-    )
-  }, 70)
-}
 
 /* ================================================= */
 /* UI SOUND                                          */
@@ -98,6 +75,7 @@ function playUISound(
   oscillator.type =
     'sine'
 
+
   oscillator.frequency.setValueAtTime(
     frequency,
     now
@@ -109,10 +87,12 @@ function playUISound(
     now
   )
 
+
   gain.gain.exponentialRampToValueAtTime(
     volume,
     now + 0.025
   )
+
 
   gain.gain.exponentialRampToValueAtTime(
     0.001,
@@ -120,11 +100,9 @@ function playUISound(
   )
 
 
-  oscillator
-    .connect(gain)
+  oscillator.connect(gain)
 
-  gain
-    .connect(masterGain)
+  gain.connect(masterGain)
 
 
   oscillator.start(now)
@@ -132,6 +110,40 @@ function playUISound(
   oscillator.stop(
     now + duration
   )
+
+}
+
+
+/* ================================================= */
+/* DIVE SOUND                                        */
+/* ================================================= */
+
+function playDiveSound() {
+
+  if (
+    !audioContext ||
+    muted
+  ) return
+
+
+  /* Same sound style as version switching */
+
+  playUISound(
+    520,
+    0.12,
+    0.11
+  )
+
+
+  setTimeout(() => {
+
+    playUISound(
+      760,
+      0.14,
+      0.08
+    )
+
+  }, 70)
 
 }
 
@@ -160,7 +172,7 @@ function createBackgroundMusic() {
     'auto'
 
   backgroundMusic.volume =
-    0.65
+    0
 
 
   backgroundMusic.addEventListener(
@@ -168,7 +180,7 @@ function createBackgroundMusic() {
     () => {
 
       console.error(
-        '❌ Cosmic Singularity music could not be loaded.',
+        '❌ Cosmic music could not be loaded.',
         backgroundMusic.error
       )
 
@@ -186,7 +198,25 @@ function startBackgroundMusic() {
 
 
   if (musicStarted) {
+
+    if (
+      backgroundMusic.paused
+    ) {
+
+      backgroundMusic.play()
+        .catch(error => {
+
+          console.error(
+            'Music playback blocked:',
+            error
+          )
+
+        })
+
+    }
+
     return
+
   }
 
 
@@ -195,29 +225,21 @@ function startBackgroundMusic() {
 
 
   backgroundMusic.volume =
-    0.01
+    0.05
 
 
-  /*
-   * IMPORTANT:
-   *
-   * This play() is called directly from
-   * the DIVE IN click.
-   */
-
-  const promise =
+  const playPromise =
     backgroundMusic.play()
 
 
-  if (promise) {
+  if (playPromise) {
 
-    promise
+    playPromise
       .then(() => {
 
         console.log(
           '🎵 Cosmic music started'
         )
-
 
         fadeMusicIn()
 
@@ -225,7 +247,7 @@ function startBackgroundMusic() {
       .catch(error => {
 
         console.error(
-          '❌ Music playback was blocked:',
+          '❌ Music playback blocked:',
           error
         )
 
@@ -255,9 +277,7 @@ function fadeMusicIn() {
   const fade =
     setInterval(() => {
 
-      if (
-        !backgroundMusic
-      ) {
+      if (!backgroundMusic) {
 
         clearInterval(fade)
 
@@ -283,12 +303,12 @@ function fadeMusicIn() {
       backgroundMusic.volume =
         Math.min(
           volume,
-          0.65
+          0.85
         )
 
 
       if (
-        volume >= 0.65
+        volume >= 0.85
       ) {
 
         clearInterval(fade)
@@ -430,13 +450,14 @@ const soundToggle =
 
 
 /* ================================================= */
-/* URL STATE                                         */
+/* URL / CURRENT VERSION                             */
 /* ================================================= */
 
 const params =
   new URLSearchParams(
     window.location.search
   )
+
 
 let currentVersion =
   Number(
@@ -544,54 +565,48 @@ function showExperience(
 if (diveButton) {
 
   diveButton.addEventListener(
-    'mouseenter',
-    () => {
-
-      initAudio()
-
-      playUISound(
-        620,
-        0.10,
-        0.045
-      )
-
-    }
-  )
-
-
-  diveButton.addEventListener(
     'click',
-    () => {
+    async () => {
 
       /*
-       * EVERYTHING AUDIO-RELATED HAPPENS
-       * INSIDE THIS CLICK.
+       * Everything starts directly from
+       * the user's click.
        */
 
       initAudio()
 
+      await audioContext.resume()
 
-      /* Soft cinematic dive */
+
+      /* Same sound as version switching */
 
       playDiveSound()
 
 
-      /* Real MP3 */
+      /* Start real MP3 */
 
       startBackgroundMusic()
 
 
       /*
-       * Let the whoosh breathe for
-       * a moment before revealing
-       * the galaxy.
+       * Enter the experience.
        */
 
       setTimeout(() => {
 
         showExperience(10)
 
-      }, 750)
+        /*
+         * Update URL without reloading.
+         */
+
+        window.history.replaceState(
+          {},
+          '',
+          '?version=10'
+        )
+
+      }, 650)
 
     }
   )
@@ -609,10 +624,17 @@ if (versionSelect) {
     'change',
     event => {
 
+      /*
+       * IMPORTANT:
+       * This does NOT reload the page.
+       */
+
       initAudio()
 
 
-      /* Two-note cinematic switch */
+      /*
+       * Version-change sound
+       */
 
       playUISound(
         520,
@@ -632,33 +654,45 @@ if (versionSelect) {
       }, 70)
 
 
-      currentVersion =
+      const selectedVersion =
         Number(
           event.target.value
         )
+
+
+      currentVersion =
+        selectedVersion
 
 
       if (versionDescription) {
 
         versionDescription.textContent =
           versions[
-            currentVersion
+            selectedVersion
           ].description
 
       }
 
 
+      /*
+       * Change URL WITHOUT refreshing.
+       */
+
       window.history.replaceState(
         {},
         '',
-        `?version=${currentVersion}`
+        `?version=${selectedVersion}`
       )
 
+
+      /*
+       * Load the new particle version.
+       */
 
       setTimeout(() => {
 
         loadVersion(
-          currentVersion
+          selectedVersion
         )
 
       }, 120)
@@ -682,9 +716,9 @@ if (resetButton) {
       initAudio()
 
       playUISound(
-        240,
-        0.20,
-        0.10
+        520,
+        0.12,
+        0.08
       )
 
     }
@@ -701,39 +735,74 @@ if (soundToggle) {
 
   soundToggle.addEventListener(
     'click',
-    () => {
+    async () => {
 
       initAudio()
+
+      await audioContext.resume()
+
+
+      /*
+       * If music hasn't started yet,
+       * this click starts it.
+       */
+
+      if (
+        !musicStarted
+      ) {
+
+        startBackgroundMusic()
+
+      }
 
 
       muted =
         !muted
 
 
-      if (backgroundMusic) {
+      if (muted) {
 
-        backgroundMusic.volume =
-          muted
-            ? 0
-            : 0.65
+        if (backgroundMusic) {
+
+          backgroundMusic.volume =
+            0
+
+        }
+
+
+        if (masterGain) {
+
+          masterGain.gain.value =
+            0
+
+        }
+
+
+        soundToggle.textContent =
+          'SOUND OFF'
+
+      } else {
+
+        if (masterGain) {
+
+          masterGain.gain.value =
+            0.55
+
+        }
+
+
+        if (backgroundMusic) {
+
+          backgroundMusic.volume =
+            0.85
+
+        }
+
+
+        soundToggle.textContent =
+          'SOUND ON'
 
       }
-
-
-      if (masterGain) {
-
-        masterGain.gain.value =
-          muted
-            ? 0
-            : 0.55
-
-      }
-
-
-      soundToggle.textContent =
-        muted
-          ? 'SOUND OFF'
-          : 'SOUND ON'
 
     }
   )
@@ -827,6 +896,10 @@ function startLanding() {
   const particles = []
 
 
+  /* --------------------------------------------- */
+  /* RESIZE                                        */
+  /* --------------------------------------------- */
+
   function resize() {
 
     const ratio =
@@ -875,6 +948,10 @@ function startLanding() {
 
   }
 
+
+  /* --------------------------------------------- */
+  /* CREATE PARTICLES                              */
+  /* --------------------------------------------- */
 
   function createParticles() {
 
@@ -940,6 +1017,10 @@ function startLanding() {
 
   }
 
+
+  /* --------------------------------------------- */
+  /* DRAW                                          */
+  /* --------------------------------------------- */
 
   function draw() {
 
