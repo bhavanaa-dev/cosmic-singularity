@@ -2,13 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
     <title>Cosmic Singularity</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <style>
+      html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #020304 !important;
+      }
+    </style>
+    <script>
+      if (window.location.search.includes('canvasOnly=1') || window.self !== window.top) {
+        document.documentElement.classList.add('canvas-only');
+      }
+    </script>
   </head>
 
   <body>
@@ -44,6 +55,8 @@
     <!-- EXPERIENCE -->
 
     <section id="experience" class="hidden">
+
+      <div id="viewport-container"></div>
 
       <header id="experience-header">
 

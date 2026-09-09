@@ -402,3 +402,46 @@ canvas {
   color: white;
   border-color: rgba(255, 255, 255, 0.4);
 }
+
+/* ------------------------------------------------ */
+/* VIEWPORT CONTAINER & VERSION FRAME               */
+/* ------------------------------------------------ */
+
+#viewport-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: auto;
+  background: #020304;
+}
+
+.version-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #020304;
+  display: block;
+}
+
+html.canvas-only,
+html.canvas-only body,
+body.canvas-only {
+  background: #020304 !important;
+}
+
+html.canvas-only #landing,
+html.canvas-only #experience-header,
+html.canvas-only #sound-toggle,
+html.canvas-only #viewport-container,
+html.canvas-only #reset,
+body.canvas-only #landing,
+body.canvas-only #experience-header,
+body.canvas-only #sound-toggle,
+body.canvas-only #viewport-container,
+body.canvas-only #reset {
+  display: none !important;
+}

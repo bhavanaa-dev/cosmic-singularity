@@ -468,9 +468,81 @@ let currentVersion =
 const hasVersion =
   versions[currentVersion] !== undefined
 
+const isCanvasOnly =
+  params.get('canvasOnly') === '1' ||
+  window.self !== window.top
+
+let activeFrame = null
+let currentPendingFrame = null
+
+let landingAnimId = null
+
+function stopLanding() {
+  if (landingAnimId) {
+    cancelAnimationFrame(landingAnimId)
+    landingAnimId = null
+  }
+}
+
+function setFrameVersion(versionNumber) {
+  const container =
+    document.getElementById('viewport-container')
+
+  if (!container) return
+
+  const targetUrl = `?canvasOnly=1&version=${versionNumber}`
+
+  const newFrame =
+    document.createElement('iframe')
+
+  newFrame.className =
+    'version-frame'
+
+  newFrame.title =
+    'Cosmic Particles'
+
+  newFrame.style.opacity =
+    activeFrame ? '0' : '1'
+
+  newFrame.style.transition =
+    'opacity 0.25s ease'
+
+  newFrame.src =
+    targetUrl
+
+  currentPendingFrame =
+    newFrame
+
+  container.appendChild(
+    newFrame
+  )
+
+  newFrame.onload = () => {
+    if (currentPendingFrame !== newFrame) {
+      newFrame.remove()
+      return
+    }
+
+    newFrame.style.opacity = '1'
+
+    const frames =
+      container.querySelectorAll('iframe.version-frame')
+
+    frames.forEach(f => {
+      if (f !== newFrame) {
+        setTimeout(() => {
+          f.remove()
+        }, 120)
+      }
+    })
+
+    activeFrame = newFrame
+  }
+}
+
 
 /* ================================================= */
-/* LOAD VERSION                                      */
+/* LOAD VERSION (USED IN CANVAS-ONLY VIEWPORT)       */
 /* ================================================= */
 
 function loadVersion(
@@ -514,6 +586,8 @@ function showExperience(
   currentVersion =
     versionNumber
 
+  stopLanding()
+
 
   if (landing) {
 
@@ -541,7 +615,7 @@ function showExperience(
   }
 
 
-  if (versionDescription) {
+  if (versionDescription && versions[currentVersion]) {
 
     versionDescription.textContent =
       versions[
@@ -551,7 +625,7 @@ function showExperience(
   }
 
 
-  loadVersion(
+  setFrameVersion(
     currentVersion
   )
 
@@ -559,311 +633,305 @@ function showExperience(
 
 
 /* ================================================= */
-/* DIVE IN                                           */
+/* MODE HANDLING                                     */
 /* ================================================= */
 
-if (diveButton) {
+if (isCanvasOnly) {
 
-  diveButton.addEventListener(
-    'click',
-    async () => {
+  /*
+   * Inside the viewport iframe:
+   * Only run the selected particle simulation.
+   * No audio, no landing, no header event listeners.
+   */
 
-      /*
-       * Everything starts directly from
-       * the user's click.
-       */
+  document.body.classList.add('canvas-only')
 
-      initAudio()
+  const targetVersion =
+    hasVersion ? currentVersion : 10
 
-      await audioContext.resume()
+  loadVersion(targetVersion)
 
+} else {
 
-      /* Same sound as version switching */
+  /*
+   * Top-level host page:
+   * Controls audio, landing transition, header UI, and viewport frame.
+   */
 
-      playDiveSound()
-
-
-      /* Start real MP3 */
-
-      startBackgroundMusic()
+  createBackgroundMusic()
 
 
-      /*
-       * Enter the experience.
-       */
+  /* --------------------------------------------- */
+  /* DIVE IN                                       */
+  /* --------------------------------------------- */
 
-      setTimeout(() => {
+  if (diveButton) {
 
-        showExperience(10)
+    diveButton.addEventListener(
+      'click',
+      async () => {
 
-        /*
-         * Update URL without reloading.
-         */
+        initAudio()
+
+        await audioContext.resume()
+
+        playDiveSound()
+
+        startBackgroundMusic()
+
+        setTimeout(() => {
+
+          showExperience(10)
+
+          window.history.replaceState(
+            {},
+            '',
+            '?version=10'
+          )
+
+        }, 650)
+
+      }
+    )
+
+  }
+
+
+  /* --------------------------------------------- */
+  /* VERSION SELECTOR                              */
+  /* --------------------------------------------- */
+
+  if (versionSelect) {
+
+    versionSelect.addEventListener(
+      'change',
+      event => {
+
+        initAudio()
+
+        playUISound(
+          520,
+          0.12,
+          0.11
+        )
+
+        setTimeout(() => {
+
+          playUISound(
+            760,
+            0.14,
+            0.08
+          )
+
+        }, 70)
+
+        const selectedVersion =
+          Number(
+            event.target.value
+          )
+
+        currentVersion =
+          selectedVersion
+
+        if (versionDescription && versions[selectedVersion]) {
+
+          versionDescription.textContent =
+            versions[
+              selectedVersion
+            ].description
+
+        }
 
         window.history.replaceState(
           {},
           '',
-          '?version=10'
+          `?version=${selectedVersion}`
         )
 
-      }, 650)
-
-    }
-  )
-
-}
-
-
-/* ================================================= */
-/* VERSION SELECTOR                                  */
-/* ================================================= */
-
-if (versionSelect) {
-
-  versionSelect.addEventListener(
-    'change',
-    event => {
-
-      /*
-       * IMPORTANT:
-       * This does NOT reload the page.
-       */
-
-      initAudio()
-
-
-      /*
-       * Version-change sound
-       */
-
-      playUISound(
-        520,
-        0.12,
-        0.11
-      )
-
-
-      setTimeout(() => {
-
-        playUISound(
-          760,
-          0.14,
-          0.08
-        )
-
-      }, 70)
-
-
-      const selectedVersion =
-        Number(
-          event.target.value
-        )
-
-
-      currentVersion =
-        selectedVersion
-
-
-      if (versionDescription) {
-
-        versionDescription.textContent =
-          versions[
-            selectedVersion
-          ].description
-
-      }
-
-
-      /*
-       * Change URL WITHOUT refreshing.
-       */
-
-      window.history.replaceState(
-        {},
-        '',
-        `?version=${selectedVersion}`
-      )
-
-
-      /*
-       * Load the new particle version.
-       */
-
-      setTimeout(() => {
-
-        loadVersion(
+        setFrameVersion(
           selectedVersion
         )
 
-      }, 120)
+      }
+    )
 
-    }
-  )
-
-}
+  }
 
 
-/* ================================================= */
-/* RESET                                             */
-/* ================================================= */
+  /* --------------------------------------------- */
+  /* RESET                                         */
+  /* --------------------------------------------- */
 
-if (resetButton) {
+  if (resetButton) {
 
-  resetButton.addEventListener(
-    'click',
+    resetButton.addEventListener(
+      'click',
+      () => {
+
+        initAudio()
+
+        playUISound(
+          520,
+          0.12,
+          0.08
+        )
+
+        try {
+
+          const iframeReset =
+            activeFrame?.contentDocument?.getElementById('reset')
+
+          if (iframeReset) {
+
+            iframeReset.click()
+
+          }
+
+        } catch (e) {
+
+          console.error('Reset error:', e)
+
+        }
+
+      }
+    )
+
+  }
+
+
+  /* --------------------------------------------- */
+  /* SOUND TOGGLE                                  */
+  /* --------------------------------------------- */
+
+  if (soundToggle) {
+
+    soundToggle.addEventListener(
+      'click',
+      async () => {
+
+        initAudio()
+
+        await audioContext.resume()
+
+        if (
+          !musicStarted
+        ) {
+
+          startBackgroundMusic()
+
+        }
+
+        muted =
+          !muted
+
+        if (muted) {
+
+          if (backgroundMusic) {
+
+            backgroundMusic.volume =
+              0
+
+          }
+
+          if (masterGain) {
+
+            masterGain.gain.value =
+              0
+
+          }
+
+          soundToggle.textContent =
+            'SOUND OFF'
+
+        } else {
+
+          if (masterGain) {
+
+            masterGain.gain.value =
+              0.55
+
+          }
+
+          if (backgroundMusic) {
+
+            backgroundMusic.volume =
+              0.85
+
+          }
+
+          soundToggle.textContent =
+            'SOUND ON'
+
+        }
+
+      }
+    )
+
+  }
+
+
+  /* --------------------------------------------- */
+  /* BROWSER BACK / FORWARD                        */
+  /* --------------------------------------------- */
+
+  window.addEventListener(
+    'popstate',
     () => {
 
-      initAudio()
+      const popParams =
+        new URLSearchParams(
+          window.location.search
+        )
 
-      playUISound(
-        520,
-        0.12,
-        0.08
-      )
+      const v =
+        Number(
+          popParams.get('version')
+        )
 
-    }
-  )
+      if (versions[v]) {
 
-}
+        currentVersion =
+          v
 
+        if (versionSelect) {
 
-/* ================================================= */
-/* SOUND TOGGLE                                      */
-/* ================================================= */
-
-if (soundToggle) {
-
-  soundToggle.addEventListener(
-    'click',
-    async () => {
-
-      initAudio()
-
-      await audioContext.resume()
-
-
-      /*
-       * If music hasn't started yet,
-       * this click starts it.
-       */
-
-      if (
-        !musicStarted
-      ) {
-
-        startBackgroundMusic()
-
-      }
-
-
-      muted =
-        !muted
-
-
-      if (muted) {
-
-        if (backgroundMusic) {
-
-          backgroundMusic.volume =
-            0
+          versionSelect.value =
+            v
 
         }
 
+        if (versionDescription) {
 
-        if (masterGain) {
-
-          masterGain.gain.value =
-            0
-
-        }
-
-
-        soundToggle.textContent =
-          'SOUND OFF'
-
-      } else {
-
-        if (masterGain) {
-
-          masterGain.gain.value =
-            0.55
+          versionDescription.textContent =
+            versions[v].description
 
         }
 
-
-        if (backgroundMusic) {
-
-          backgroundMusic.volume =
-            0.85
-
-        }
-
-
-        soundToggle.textContent =
-          'SOUND ON'
+        setFrameVersion(v)
 
       }
 
     }
   )
 
-}
 
+  /* --------------------------------------------- */
+  /* INITIAL VIEW                                  */
+  /* --------------------------------------------- */
 
-/* ================================================= */
-/* DIRECT VERSION ACCESS                             */
-/* ================================================= */
+  if (hasVersion) {
 
-if (hasVersion) {
-
-  if (landing) {
-
-    landing.classList.add(
-      'hidden'
-    )
-
-  }
-
-
-  if (experience) {
-
-    experience.classList.remove(
-      'hidden'
-    )
-
-  }
-
-
-  if (versionSelect) {
-
-    versionSelect.value =
+    showExperience(
       currentVersion
+    )
+
+  } else {
+
+    startLanding()
 
   }
-
-
-  if (versionDescription) {
-
-    versionDescription.textContent =
-      versions[
-        currentVersion
-      ].description
-
-  }
-
-
-  loadVersion(
-    currentVersion
-  )
 
 }
-
-
-/* ================================================= */
-/* PREPARE MUSIC                                     */
-/* ================================================= */
-
-createBackgroundMusic()
 
 
 /* ================================================= */
@@ -1179,9 +1247,10 @@ function startLanding() {
     ctx.fill()
 
 
-    requestAnimationFrame(
-      draw
-    )
+    landingAnimId =
+      requestAnimationFrame(
+        draw
+      )
 
   }
 
@@ -1203,16 +1272,5 @@ function startLanding() {
 
     }
   )
-
-}
-
-
-/* ================================================= */
-/* START LANDING                                     */
-/* ================================================= */
-
-if (!hasVersion) {
-
-  startLanding()
 
 }
