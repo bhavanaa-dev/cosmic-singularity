@@ -53,22 +53,38 @@ const versions = {
   }
 }
 
+// Tell Vite about every possible version module
+const versionModules = import.meta.glob('./versions/*.js')
+
+// Read version from URL
 const params = new URLSearchParams(window.location.search)
 const requestedVersion = Number(params.get('version')) || 10
 
-const currentVersion = versions[requestedVersion] ? requestedVersion : 10
+const currentVersion = versions[requestedVersion]
+  ? requestedVersion
+  : 10
+
 const version = versions[currentVersion]
 
+// UI
 const versionSelect = document.getElementById('version-select')
-const versionTitle = document.getElementById('version-title')
 const versionDescription = document.getElementById('version-description')
 
 versionSelect.value = currentVersion
 versionDescription.textContent = version.description
 
+// Switch versions
 versionSelect.addEventListener('change', (event) => {
   const selectedVersion = event.target.value
+
   window.location.href = `?version=${selectedVersion}`
 })
 
-import(version.file)
+// Load selected version
+const loadVersion = versionModules[version.file]
+
+if (loadVersion) {
+  loadVersion()
+} else {
+  console.error(`Version module not found: ${version.file}`)
+}
